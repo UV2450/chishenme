@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#c8532a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="今天吃啥">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="icon" href="./icon-192.png">
+<title>今天吃啥 · 天津三口之家</title>
+<style>
+:root{
+  --bg:#faf7f2; --card:#fffdfa; --ink:#2b2622; --ink2:#6b6156; --ink3:#9a8f82;
+  --line:#eae2d6; --accent:#c8532a; --accent-soft:#f7e4da;
+  --green:#2f7d4f; --green-soft:#e3f1e8;
+  --amber:#a9720f; --amber-soft:#fbf0d8;
+  --red:#b3392f; --red-soft:#f9e3e0;
+  --r:16px;
+  --sh:0 1px 2px rgba(60,45,30,.05),0 6px 18px rgba(60,45,30,.06);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  padding-bottom:calc(78px + var(--safe-b));
+  -webkit-text-size-adjust:100%;
+}
+h1,h2,h3,h4{margin:0;font-weight:700;line-height:1.35}
+p{margin:0}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input{font:inherit}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg,#fffdfa 60%,rgba(255,253,250,.94));
+  border-bottom:1px solid var(--line);
+  padding:10px 16px 9px;
+  display:flex;align-items:center;gap:10px;
+  backdrop-filter:saturate(1.2) blur(8px);
+}
+.logo{
+  width:34px;height:34px;border-radius:11px;flex:0 0 auto;
+  background:linear-gradient(140deg,#e0703f,#b8461f);
+  display:grid;place-items:center;color:#fff;font-size:17px;
+  box-shadow:0 3px 10px rgba(184,70,31,.28);
+}
+header h1{font-size:16px;letter-spacing:.2px}
+header .sub{font-size:11.5px;color:var(--ink3);margin-top:-2px}
+
+/* ---------- screens ---------- */
+.screen{display:none;padding:14px 14px 8px;animation:fade .22s ease}
+.screen.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--sh);padding:14px;margin-bottom:12px;
+}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.card-h h2{font-size:15.5px}
+.card-h .hint{font-size:11.5px;color:var(--ink3)}
+.muted{color:var(--ink2);font-size:13px}
+.tiny{font-size:12px;color:var(--ink3)}
+
+/* ---------- chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  padding:7px 13px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;font-size:13px;color:var(--ink2);white-space:nowrap;
+  transition:.15s;font-weight:500;
+}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.chip:active{transform:scale(.96)}
+
+/* ---------- swatch row (category filter) ---------- */
+.seg{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg .chip{flex:0 0 auto}
+
+/* ---------- meal result ---------- */
+.meal{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:var(--card);box-shadow:var(--sh);margin-bottom:12px}
+.meal-top{
+  padding:13px 15px;background:linear-gradient(120deg,#fdf1e9,#fbf6ee);
+  border-bottom:1px dashed #e6d9c8;display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.meal-top .tagline{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.4px}
+.meal-top .who{font-size:11.5px;color:var(--ink3)}
+.line{
+  display:flex;align-items:flex-start;gap:10px;padding:12px 15px;border-bottom:1px solid #f2ece2;
+}
+.line:last-child{border-bottom:0}
+.role{
+  flex:0 0 40px;font-size:11px;font-weight:700;color:#fff;background:#b9ab99;
+  border-radius:7px;text-align:center;padding:3px 0;margin-top:2px;letter-spacing:.5px;
+}
+.role.r1{background:#c8532a}.role.r2{background:#8a7b66}.role.r3{background:#4e8a63}
+.role.r4{background:#3f7c96}.role.r5{background:#8e6a9c}
+.line .body{flex:1;min-width:0}
+.line .dn{font-size:15.5px;font-weight:600;line-height:1.4}
+.line .ds{font-size:12px;color:var(--ink3);margin-top:2px;line-height:1.45}
+.line .ds em{font-style:normal;color:var(--amber);font-weight:600}
+.swap-btn{
+  flex:0 0 auto;font-size:12px;padding:6px 11px;border-radius:9px;
+  border:1px solid var(--line);background:#fff;color:var(--ink2);margin-top:1px;
+}
+.swap-btn:active{background:#f5efe6}
+.badge{
+  display:inline-block;font-size:10.5px;padding:1px 6px;border-radius:6px;
+  font-weight:700;line-height:1.6;vertical-align:2px;margin-left:5px;
+}
+.b0{background:var(--green-soft);color:var(--green)}
+.b1{background:var(--amber-soft);color:var(--amber)}
+.b2{background:var(--red-soft);color:var(--red)}
+
+/* ---------- big buttons ---------- */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  padding:15px;border-radius:15px;font-size:16px;font-weight:700;
+  background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(200,83,42,.3);
+  transition:.15s;
+}
+.btn:active{transform:scale(.985);box-shadow:0 3px 10px rgba(200,83,42,.28)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none;font-weight:600}
+.btn.sm{padding:11px;font-size:14px;border-radius:12px;box-shadow:none}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.stack{display:grid;gap:9px;margin-bottom:12px}
+
+/* ---------- dish list ---------- */
+.dish{
+  border:1px solid var(--line);border-radius:13px;background:var(--card);
+  margin-bottom:8px;overflow:hidden;
+}
+.dish-h{display:flex;align-items:center;gap:9px;padding:11px 13px;width:100%;text-align:left}
+.dish-h .nm{font-weight:600;font-size:14.5px;flex:1;min-width:0}
+.dish-h .meta{font-size:11px;color:var(--ink3);flex:0 0 auto}
+.dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.d0{background:#3f9e6a}.d1{background:#d79a24}.d2{background:#cf5b50}
+.dish-b{display:none;padding:0 13px 13px;font-size:13px;color:var(--ink2);line-height:1.65}
+.dish.open .dish-b{display:block}
+.dish-b b{color:var(--ink);font-weight:600}
+.kv{margin-top:6px}
+.kv span{color:var(--ink3);font-size:11.5px;display:block;letter-spacing:.3px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tg{font-size:10.5px;padding:2px 7px;border-radius:6px;background:#f4eee5;color:var(--ink2)}
+
+/* ---------- tables ---------- */
+.tb{width:100%;border-collapse:collapse;font-size:13px}
+.tb th{text-align:left;font-size:11.5px;color:var(--ink3);font-weight:600;padding:0 0 6px;border-bottom:1px solid var(--line)}
+.tb td{padding:9px 0;border-bottom:1px solid #f4efe7;vertical-align:top;line-height:1.5}
+.tb tr:last-child td{border-bottom:0}
+.tb td:first-child{font-weight:600;color:var(--ink);width:40%;padding-right:10px}
+.yes{color:var(--red);font-weight:700}
+.no{color:var(--green);font-weight:700}
+.warn{color:var(--amber);font-weight:700}
+.verdict{display:block;font-weight:700;font-size:12.5px;letter-spacing:.3px}
+.verdict.yes{color:var(--red)}
+.verdict.warn{color:var(--amber)}
+.verdict.no{color:var(--green)}
+.tnote{display:block;color:var(--ink2);font-size:12.5px;line-height:1.55;margin-top:2px;font-weight:400}
+.sm{display:block;color:var(--ink3);font-size:11.5px;font-weight:400;margin-top:1px}
+
+/* ---------- checklist ---------- */
+.ck{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f4efe7;font-size:14px}
+.ck:last-child{border-bottom:0}
+.ck input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:0 0 auto}
+.ck.done span{color:var(--ink3);text-decoration:line-through}
+.ck small{display:block;color:var(--ink3);font-size:11.5px;text-decoration:none!important}
+
+/* ---------- accordion ---------- */
+.acc{border:1px solid var(--line);border-radius:13px;background:var(--card);margin-bottom:8px;overflow:hidden}
+.acc>button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;padding:13px;font-weight:600;font-size:14.5px;text-align:left}
+.acc>button .arrow{color:var(--ink3);font-size:12px;transition:.2s}
+.acc.open>button .arrow{transform:rotate(90deg)}
+.acc .inner{display:none;padding:0 13px 14px;font-size:13.5px;color:var(--ink2);line-height:1.7}
+.acc.open .inner{display:block}
+.acc .inner ul{margin:0;padding-left:18px}
+.acc .inner li{margin:5px 0}
+.acc .inner b{color:var(--ink)}
+
+/* ---------- tabbar ---------- */
+nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(255,253,250,.96);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding:7px 6px calc(7px + var(--safe-b));
+}
+nav button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 0;color:var(--ink3);font-size:10.5px;font-weight:600;border-radius:10px}
+nav button .ic{font-size:19px;line-height:1.1;filter:grayscale(1);opacity:.55}
+nav button.on{color:var(--accent)}
+nav button.on .ic{filter:none;opacity:1}
+
+/* ---------- misc ---------- */
+.empty{text-align:center;color:var(--ink3);font-size:13px;padding:26px 0}
+.wk-day{border-bottom:1px solid #f4efe7;padding:10px 0;font-size:13.5px}
+.wk-day:last-child{border-bottom:0}
+.wk-day b{color:var(--accent);font-size:12px;display:inline-block;min-width:44px}
+.wk-day .m{color:var(--ink2)}
+.toast{
+  position:fixed;left:50%;bottom:calc(96px + var(--safe-b));transform:translate(-50%,12px);
+  background:rgba(43,38,34,.94);color:#fff;padding:10px 18px;border-radius:999px;
+  font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:86vw;text-align:center;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.hr{height:1px;background:var(--line);margin:11px 0}
+.search{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:15px;outline:none}
+.search:focus{border-color:#d9a58c}
+.pill-count{font-size:11px;color:var(--ink3);font-weight:400;margin-left:6px}
+.note-box{background:#fdf6ec;border:1px solid #f0e2cd;border-radius:12px;padding:11px 13px;font-size:12.5px;color:#7a6446;line-height:1.65}
+.danger-box{background:var(--red-soft);border:1px solid #efcdc8;border-radius:12px;padding:11px 13px;font-size:12.5px;color:#8c3229;line-height:1.65}
+.hot{color:var(--accent);font-weight:700}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🍚</div>
+  <div>
+    <h1>今天吃啥</h1>
+    <div class="sub">天津 · 三口之家 · 无麸质友好</div>
+  </div>
+</header>
+
+<!-- ============ 1. 摇一餐 ============ -->
+<main id="s-pick" class="screen on">
+  <div class="card">
+    <div class="card-h"><h2>这一顿想吃成什么样</h2></div>
+    <div class="seg" id="modeSeg">
+      <button class="chip on" data-mode="dinner">晚饭</button>
+      <button class="chip" data-mode="lunch">午饭 / 带饭</button>
+      <button class="chip" data-mode="breakfast">早饭</button>
+    </div>
+    <div class="hr"></div>
+    <div class="chips" id="condChips">
+      <button class="chip on" data-cond="strict">只出本色无麸质</button>
+      <button class="chip" data-cond="quick">30 分钟内</button>
+      <button class="chip" data-cond="stew">想吃炖菜</button>
+      <button class="chip" data-cond="protein">高蛋白（长个子）</button>
+    </div>
+  </div>
+
+  <div id="mealOut"></div>
+
+  <button class="btn" id="rollBtn">🎲 换一餐</button>
+  <div class="stack" style="margin-top:9px">
+    <div class="btn-row">
+      <button class="btn ghost sm" id="saveBtn">✓ 就吃这个</button>
+      <button class="btn ghost sm" id="shopBtn">📋 食材清单</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn ghost sm" id="weekBtn">📅 排一周</button>
+      <button class="btn ghost sm" id="histBtn">🕘 做过的</button>
+    </div>
+  </div>
+  <div class="note-box">
+    「本色无麸质」= 这道菜按传统做法就不含小麦、大麦、黑麦。<br>
+    想吃却被标成黄色的菜，点菜名看下面的<b>换法</b>就能做——多数的坑都在<b>酱油</b>上。
+  </div>
+</main>
+
+<!-- ============ 2. 菜单 ============ -->
+<main id="s-lib" class="screen">
+  <input class="search" id="q" placeholder="搜菜名 / 食材，比如：茄子、豆腐、牛肉">
+  <div class="seg" id="catSeg" style="margin-top:10px"></div>
+  <div class="chips" id="gfSeg" style="margin-bottom:6px">
+    <button class="chip on" data-g="-1">全部</button>
+    <button class="chip" data-g="0">本色无麸</button>
+    <button class="chip" data-g="1">换一下就行</button>
+    <button class="chip" data-g="2">含小麦</button>
+  </div>
+  <div class="chips" id="tagSeg" style="margin-bottom:10px">
+    <button class="chip on" data-tag="">全部标签</button>
+    <button class="chip" data-tag="快手">快手</button>
+    <button class="chip" data-tag="下饭">下饭</button>
+    <button class="chip" data-tag="孩子爱">孩子爱</button>
+    <button class="chip" data-tag="东北">东北</button>
+    <button class="chip" data-tag="天津">天津</button>
+  </div>
+  <div class="tiny" id="libCount" style="margin-bottom:8px"></div>
+  <div id="libList"></div>
+</main>
+
+<!-- ============ 3. 麸质 ============ -->
+<main id="s-gf" class="screen">
+  <div class="card">
+    <div class="card-h"><h2>先记住三句话</h2></div>
+    <div style="font-size:14px;line-height:1.85">
+      <p><b>1. 小麦、大麦、黑麦是同一类。</b>大麦和黑麦里的蛋白（hordein、secalin）跟小麦的麦胶蛋白是近亲，<b>你媳妇对小麦不行，这两样基本也别试了</b>，省得白难受一场。</p>
+      <p style="margin-top:8px"><b>2. 燕麦不是"安全谷物"。</b>它本身带类似蛋白，而且国内燕麦片绝大多数和麦子共用生产线。你们已经试出来了，就别再碰，包括"燕麦拿铁""杂粮饼干"。</p>
+      <p style="margin-top:8px"><b>3. 中式厨房最大的坑是酱油。</b>生抽、老抽、蒸鱼豉油、蚝油、豆瓣酱、甜面酱、料酒——<b>几乎全含小麦</b>。菜谱里"没有面"的菜，一样能让她不舒服。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>调料红绿灯</h2><span class="hint">厨房里挨个看配料表</span></div>
+    <table class="tb">
+      <tr><th>调料</th><th>判断</th></tr>
+      <tr><td>酿造酱油<span class="sm">生抽 · 老抽 · 蒸鱼豉油</span></td><td><span class="verdict yes">⚠ 含小麦</span><span class="tnote">换<b>无麸质酱油</b>（纯大豆酿造那种）或椰子氨基</span></td></tr>
+      <tr><td>蚝油</td><td><span class="verdict warn">多半含</span><span class="tnote">常加小麦粉增稠，要挑标注无麸质的；不行就用<b>蒜蓉+盐+糖</b>顶上</span></td></tr>
+      <tr><td>黄豆酱<span class="sm">大酱 · 甜面酱 · 豆瓣酱</span></td><td><span class="verdict yes">⚠ 含小麦</span><span class="tnote">东北菜和京酱肉丝的命门，必须找无麸质版本</span></td></tr>
+      <tr><td>料酒<span class="sm">黄酒 · 花雕</span></td><td><span class="verdict warn">多半含</span><span class="tnote">麦曲酿造；用<b>白酒</b>或标注无麸质的料酒</span></td></tr>
+      <tr><td>醋<span class="sm">老陈醋 · 香醋</span></td><td><span class="verdict warn">多半含</span><span class="tnote">用麸皮酿，换<b>米醋、白醋、苹果醋</b></span></td></tr>
+      <tr><td>腐乳<span class="sm">豆豉 · 鸡精 · 火锅底料</span></td><td><span class="verdict warn">看配料</span><span class="tnote">常见小麦粉、麦芽糊精打底</span></td></tr>
+      <tr><td>玉米淀粉<span class="sm">土豆 · 红薯 · 木薯 · 绿豆淀粉</span></td><td><span class="verdict no">✓ 安全</span><span class="tnote">挂糊、勾芡、上浆全靠它</span></td></tr>
+      <tr><td>小麦淀粉<span class="sm">澄面 · 面筋</span></td><td><span class="verdict yes">⚠ 含小麦</span><span class="tnote">澄面也是小麦来的，别被「淀粉」两个字骗了</span></td></tr>
+      <tr><td>盐<span class="sm">糖 · 味精 · 花椒大料 · 辣椒 · 孜然</span></td><td><span class="verdict no">✓ 安全</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>主食替换表</h2></div>
+    <table class="tb">
+      <tr><th>想吃</th><th>换成</th></tr>
+      <tr><td>挂面 / 手擀面</td><td><span class="no">米线、红薯粉、土豆粉、河粉、米粉</span></td></tr>
+      <tr><td>饺子、馄饨、包子</td><td>米皮蒸饺、汆丸子、玉米面菜团子、米粉肠粉卷</td></tr>
+      <tr><td>馒头、大饼、烧饼</td><td>玉米面饽饽、大米发糕、红薯、蒸南瓜、二米饭</td></tr>
+      <tr><td>面包、汉堡胚</td><td>无麸质面包（网上有）、米饭饼、玉米饼</td></tr>
+      <tr><td>油条、麻花、炸糕、煎饼馃子</td><td>土豆丝饼、玉米面贴饼子、蒸红薯</td></tr>
+      <tr><td>意大利面</td><td>无麸质意面（玉米/米粉做）、米粉</td></tr>
+      <tr><td>面粉挂糊炸物</td><td><b>土豆淀粉</b>挂糊，一样脆，锅包肉本来就这么做</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>天津本地，哪些得躲</h2></div>
+    <div class="chips" style="margin-bottom:8px">
+      <span class="chip" style="border-color:#efcdc8;background:var(--red-soft);color:var(--red)">麻花</span>
+      <span class="chip" style="border-color:#efcdc8;background:var(--red-soft);color:var(--red)">煎饼馃子</span>
+      <span class="chip" style="border-color:#efcdc8;background:var(--red-soft);color:var(--red)">独面筋</span>
+      <span class="chip" style="border-color:#efcdc8;background:var(--red-soft);color:var(--red)">大饼夹一切</span>
+      <span class="chip" style="border-color:#efcdc8;background:var(--red-soft);color:var(--red)">锅巴菜（卤里全是酱油）</span>
+      <span class="chip" style="border-color:#efcdc8;background:var(--red-soft);color:var(--red)">老豆腐（卤）</span>
+      <span class="chip" style="border-color:#efcdc8;background:var(--red-soft);color:var(--red)">天津酱货</span>
+      <span class="chip" style="border-color:#efcdc8;background:var(--red-soft);color:var(--red)">狗不理包子</span>
+    </div>
+    <p class="muted">反过来，天津菜里也有天生能吃的：<span class="hot">贴饽饽熬鱼</span>（玉米面饽饽，只要熬鱼别放酱油）、<span class="hot">炒青虾仁</span>（只用盐、蛋清、淀粉）、<span class="hot">罾蹦鲤鱼</span>（糖醋口，用米醋+土豆淀粉）。</p>
+    <p class="muted" style="margin-top:8px">锅巴菜、老豆腐的<b>卤</b>是酱油熬的，这是天津早餐最容易被忽略的一刀。真想吃，就自己用无麸质酱油打卤。</p>
+  </div>
+
+  <div class="acc">
+    <button>跟着段小段、老东北学做菜，怎么改成能吃的 <span class="arrow">›</span></button>
+    <div class="inner">
+      <p>这俩的路子都是东北家常：<b>量大、油足、酱重、一锅炖</b>。好消息是东北菜天生"无麸质"的比例高得离谱——<b>锅包肉、溜肉段、地三鲜、大拉皮、雪衣豆沙</b>本来就是拿土豆淀粉做的，一道面都不用。</p>
+      <ul>
+        <li><b>酱油减半，换成无麸质酱油。</b>东北菜色重，家里备一瓶无麸质酱油是最高性价比的一步。</li>
+        <li><b>"大酱"是第二个坑。</b>铁锅炖、蘸酱菜、酱大骨全靠它。找配料表没有"小麦粉"的黄豆酱，或者用<b>腐乳+盐</b>调个近似味。</li>
+        <li><b>挂糊统一换土豆淀粉。</b>锅包肉、溜肉段、炸蘑菇、炸茄盒——淀粉糊比面粉糊更脆，还更接近老做法。</li>
+        <li><b>料酒换白酒。</b>去腥一样够，还不带麦。</li>
+        <li><b>他用的"葱姜蒜爆锅+大火收汁"照抄没问题</b>，这些本来就不含麸质。</li>
+      </ul>
+      <p style="margin-top:8px">我在菜单里把这类菜都标好了，荤菜栏翻一翻，绿点的一堆。</p>
+    </div>
+  </div>
+
+  <div class="acc">
+    <button>家里别串味：5 条 <span class="arrow">›</span></button>
+    <div class="inner">
+      <ul>
+        <li><b>锅、铲、案板、漏勺分开</b>一套。面食那套和她的菜别混用。</li>
+        <li><b>油锅最难办。</b>炸过油条、麻花的油，别用来给她做菜。</li>
+        <li><b>煮面水别下面条再煮她的菜</b>，汤底直接就是面汤。</li>
+        <li><b>面包机、烤箱、空气炸锅</b>烤过面包的，垫张油纸再用。</li>
+        <li><b>盛过面食的盘子别直接盛菜</b>，尤其凉菜。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="acc">
+    <button>点外卖 / 下馆子的说法 <span class="arrow">›</span></button>
+    <div class="inner">
+      <ul>
+        <li>能点：<b>清蒸、白灼、炖、烤、凉拌（让不放酱油）</b>。</li>
+        <li>避开：<b>挂糊炸的、勾厚芡的、酱汁浓的、卤味、面食、汤面</b>。</li>
+        <li>一句话说明白：「<b>对小麦过敏，一点酱油都不行，麻烦用盐做</b>」——说"麸质"很多店家听不懂，说"小麦/面粉/酱油"最有效。</li>
+        <li>火锅：<b>清汤锅底</b>，蘸料用<b>麻酱+韭菜花+香菜</b>（别放生抽），丸子类都别点（掺淀粉和面包糠）。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="danger-box">
+    <b>说明一下：</b>这些是照着常见配料表和烹饪习惯整理的<b>采购参考</b>，不是诊断结论。包装食品每换一个牌子都要重新看配料表。要是她症状反复，还是建议去消化科查一次（乳糜泻要抽血+活检才能排除）。
+  </div>
+</main>
+
+<!-- ============ 4. 清单 ============ -->
+<main id="s-list" class="screen">
+  <div class="card">
+    <div class="card-h"><h2>常备清单</h2><span class="hint" id="ckStat"></span></div>
+    <div id="pantry"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>我做过</h2><button class="tiny" id="clearHist" style="color:var(--accent)">清空</button></div>
+    <div id="hist"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>怎么放到手机桌面</h2></div>
+    <div style="font-size:13.5px;line-height:1.8;color:var(--ink2)">
+      <p><b>安卓（微信/浏览器）：</b>用 Chrome 或夸克打开这个文件，右上角菜单 → 添加到主屏幕。</p>
+      <p style="margin-top:6px"><b>iPhone：</b>用 Safari 打开 → 分享 → 添加到主屏幕。</p>
+      <p style="margin-top:6px">加完以后图标就在桌面上，<b>断网也能用</b>——数据全在这一个文件里，不联网、不上传。</p>
+      <p style="margin-top:6px">文件想发到手机上，微信发给自己（文件传输助手）→ 用浏览器打开。</p>
+    </div>
+  </div>
+</main>
+
+<nav>
+  <button class="on" data-s="pick"><span class="ic">🎲</span>摇一餐</button>
+  <button data-s="lib"><span class="ic">📖</span>菜单</button>
+  <button data-s="gf"><span class="ic">🌾</span>麸质</button>
+  <button data-s="list"><span class="ic">📋</span>清单</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   菜品库
+   [名称, 类别, 麸质状态(0本色无麸/1换一下/2含小麦), 麸质说明, 标签, 主要食材, 做法]
+   ========================================================= */
+const DISHES = [
+/* ---------------- 早餐 ---------------- */
+["杂粮粥 + 拌凉菜 + 煎蛋","早餐",0,"玉米糁、小米、大米都不含麸质，别往粥里加燕麦","快手,少油,早餐","小米·玉米糁·大米·黄瓜·鸡蛋","杂粮头天晚上泡上→早上煮25分钟→凉菜用盐、米醋、香油拌，别放酱油→煎两个蛋"],
+["紫菜包饭","早餐",0,"米饭+香油+盐，只要不蘸酱油就完全干净","快手,孩子爱,早餐,主食","米饭·紫菜·鸡蛋·黄瓜·胡萝卜·香油","米饭趁温热拌香油和盐→蛋皮切条、黄瓜胡萝卜切条→卷紧→刀蘸水切段"],
+["大米粥 + 咸菜 + 煎蛋","早餐",0,"自家腌的咸菜最保险，买的酱菜看配料","快手,少油,早餐","大米·咸菜·鸡蛋","米水1:10煮20分钟→咸菜切丝用香油拌"],
+["小米粥 + 蒸南瓜 + 水煮蛋","早餐",0,"","少油,早餐","小米·南瓜·鸡蛋","小米煮20分钟→南瓜切块蒸15分钟"],
+["玉米面糊糊 + 咸菜","早餐",0,"纯玉米面，别买掺了面粉的杂合面","快手,早餐","玉米面·咸菜","玉米面先用凉水化开→倒进开水锅里搅5分钟"],
+["土豆丝饼","早餐",0,"关键是用土豆淀粉粘，不放面粉","快手,孩子爱,早餐","土豆·土豆淀粉·鸡蛋·葱","土豆擦丝不洗→加土豆淀粉和蛋液抓匀→压成小饼两面煎黄"],
+["鸡蛋羹","早餐",0,"","快手,孩子爱,少油,早餐","鸡蛋·温水·香油","蛋液加1.5倍温水过筛→盖保鲜膜中火蒸10分钟→淋香油和生抽（无麸质的）"],
+["皮蛋瘦肉粥","早餐",0,"","早餐,少油","大米·皮蛋·猪里脊·姜丝","米泡半小时煮到开花→肉丝用淀粉抓过下锅→起锅前放皮蛋和姜丝"],
+["豆浆 + 玉米面发糕","早餐",0,"发糕用玉米面配大米粉，不用小麦粉","早餐,少油","黄豆·玉米面·大米粉·酵母","黄豆泡一夜打浆煮开→玉米面+大米粉+酵母发好上锅蒸25分钟"],
+["玉米面贴饼子 + 豆浆","早餐",0,"东北老吃法，纯玉米面就成","早餐,东北","玉米面·小苏打·黄豆","玉米面用温水烫一半→贴锅边小火烙，锅底添点水盖盖焖熟"],
+["牛奶 / 自制花生露","早餐",0,"纯牛奶没问题；别买那种「麦香」「谷物」冲饮","快手,早餐","牛奶·花生","花生泡一夜→加水和一点米打浆→煮开过滤"],
+["无麸质面包片 + 花生酱","早餐",0,"面包必须买标注无麸质的；花生酱挑纯花生+盐的","快手,早餐","无麸质面包·花生酱·牛奶","烤一下抹酱"],
+["炒米饭","早餐",1,"酱油换无麸质酱油；别用剩面条炒","快手,孩子爱,下饭","米饭·鸡蛋·葱·胡萝卜丁","隔夜饭打散→蛋液先炒散盛出→下饭炒到粒粒分明→淋无麸质酱油"],
+["腊肠焖饭","早餐",1,"腊肠看配料，很多掺小麦淀粉；换成自家无麸质香肠最稳","一锅出,下饭","大米·腊肠·香菇·胡萝卜","腊肠切片铺在米上一起焖→跳闸后拌入无麸质酱油"],
+["青菜面 + 煎蛋","早餐",1,"挂面换米粉、红薯粉或土豆粉","快手,早餐","米粉·青菜·鸡蛋","米粉另锅煮好捞进碗→青菜烫一下→煎蛋盖上去→汤用盐和香油调"],
+["炸酱面","早餐",1,"甜面酱、黄豆酱都含小麦粉；用无麸质酱+肉末炒","下饭,东北","肉末·无麸质黄豆酱·黄瓜丝·米粉","肉末炒香下酱小火炸10分钟→米粉煮好过凉→拌上"],
+["麻酱拌面","早餐",1,"麻酱本身安全，面条换米粉","快手,早餐","芝麻酱·米粉·黄瓜丝·蒜","麻酱用温水澥开加盐→米粉拌匀→撒黄瓜丝"],
+["西红柿鸡蛋面","早餐",1,"面条换米粉或土豆粉","快手,孩子爱","西红柿·鸡蛋·米粉","西红柿炒出汁→加水煮开→淋蛋液→浇在煮好的米粉上"],
+["打卤面","早餐",1,"面条换米粉；卤里的酱油换无麸质","下饭,天津","木耳·黄花菜·鸡蛋·肉片·米粉","木耳黄花菜泡发炒香→加汤勾芡→淋蛋液→浇米粉"],
+["意大利面","早餐",1,"买玉米或米粉做的无麸质意面","孩子爱","无麸质意面·番茄·牛肉末·洋葱","牛肉末炒香加番茄酱熬10分钟→意面按包装煮→拌匀"],
+["麻辣烫 / 米线 / 土豆粉","早餐",1,"米线土豆粉本身安全，底料和麻酱要挑；丸子类一律别点（掺淀粉面包糠）","下饭,一锅出","米线·青菜·豆皮·麻酱","底料用骨汤+盐+辣椒调，别用含麦的火锅底→麻酱单独蘸"],
+["馄饨","早餐",1,"馄饨皮是小麦；改成汆丸子汤，或买米皮","一锅出,早餐","肉馅·淀粉·紫菜·虾皮","肉馅加淀粉和蛋清打上劲→挤成小丸子下汤锅→撒紫菜虾皮香菜"],
+["饺子","早餐",1,"饺子皮是小麦；用米皮做蒸饺，或者干脆吃汆丸子","一锅出,孩子爱","肉馅·韭菜·米皮","米皮泡软包馅上锅蒸8分钟→蘸料用米醋+蒜泥"],
+["锅巴菜（自己打卤）","早餐",1,"锅巴是绿豆面做的，安全；店里那碗卤是酱油熬的，不行","天津,早餐","绿豆锅巴·木耳·黄花菜·无麸质酱油","锅巴掰块→卤用无麸质酱油+木耳黄花菜勾芡→浇上撒麻酱和香菜"],
+["老豆腐","早餐",1,"豆腐本身安全，卤里的酱油要换","天津,早餐","内酯豆腐·木耳·黄花菜·无麸质酱油","豆腐蒸热→卤用无麸质酱油打→浇上撒韭菜花"],
+["煎饼馃子","早餐",2,"绿豆面里掺小麦面，馃子馃篦更是纯面粉","天津","绿豆面·鸡蛋·葱花·馃子","想吃就把绿豆面糊自己摊，别放馃子，只卷鸡蛋和葱"],
+["油条 + 豆浆","早餐",2,"面粉+明矾","","面粉·明矾·黄豆","换成土豆丝饼或玉米面贴饼子"],
+["手抓饼","早餐",2,"小麦面+起酥油","","面粉·起酥油·鸡蛋","换无麸质冷冻饼皮，或做土豆丝饼"],
+["烤冷面","早餐",2,"冷面片就是小麦面压的","","冷面片·鸡蛋·香肠·洋葱","几乎没有安全替代，换成炒米粉"],
+["火烧 / 烧饼夹肉","早餐",2,"纯小麦","天津","面粉·芝麻·卤肉","换玉米面饽饽夹肉"],
+["包子","早餐",2,"发面就是小麦","","面粉·猪肉馅·葱姜","换玉米面菜团子（玉米面+菜馅蒸）"],
+["馒头 / 花卷","早餐",2,"","","面粉·酵母","换大米发糕、玉米面饽饽"],
+["大饼","早餐",2,"","天津","面粉","换玉米面贴饼子"],
+["普通面包片 / 吐司","早餐",2,"","","小麦粉·黄油·酵母","买标注无麸质的面包，或者用玉米饼"],
+["自制汉堡","早餐",2,"汉堡胚是小麦","孩子爱","汉堡胚·牛肉饼·生菜·芝士","换米饭饼夹肉，或者无麸质汉堡胚"],
+["煎面包片配奶酪火腿","早餐",2,"面包+部分火腿掺小麦淀粉","","吐司·奶酪片·火腿","用玉米饼代替，火腿挑配料表干净的"],
+
+/* ---------------- 主食 ---------------- */
+["米饭","主食",0,"","主食,少油","大米",""],
+["二米饭","主食",0,"大米+小米，东北家常","主食,东北","大米·小米","小米占三成，一起焖"],
+["蒸南瓜","主食",0,"","主食,少油,孩子爱","南瓜","切块蒸15分钟"],
+["蒸红薯 / 紫薯","主食",0,"","主食,少油,快手","红薯","蒸20分钟，当主食吃"],
+["玉米面饽饽","主食",0,"纯玉米面，东北人拿它当主食几百年","主食,东北","玉米面·小苏打","玉米面烫一半+凉水和一半→团成饼→蒸20分钟或贴锅边"],
+["大米发糕","主食",0,"用大米粉，不是面粉","主食,孩子爱","大米粉·酵母·糖","米浆发酵2小时→倒模具蒸25分钟"],
+["藜麦饭","主食",0,"藜麦是安全谷物，掺在米饭里也升蛋白","主食,高蛋白,少油","藜麦·大米","藜麦洗掉皂苷→和米一起焖"],
+["玉米烙","主食",0,"用玉米淀粉粘，别放面粉","孩子爱,炸","玉米粒·土豆淀粉·糖","玉米粒裹淀粉→下油锅摊平炸定型→撒糖"],
+["米饭饼","主食",0,"替代面包汉堡胚的好办法","快手,孩子爱","剩米饭·鸡蛋·淀粉","米饭加蛋和淀粉捣黏→团成饼煎黄"],
+["土豆泥","主食",0,"","孩子爱,少油","土豆·牛奶·黄油","土豆蒸透压泥→加温牛奶和黄油搅顺滑"],
+["蒜香烤土豆","主食",0,"","快手,烤,孩子爱","土豆·蒜·橄榄油·盐","土豆切角焯水→拌油盐蒜粉→220度烤25分钟"],
+["紫米粥","主食",0,"","主食,少油","紫米·大米","泡一夜煮40分钟"],
+["腊味煲仔饭","主食",1,"腊肠腊肉看配料，很多掺小麦淀粉","一锅出,下饭","米·腊肠·青菜","砂锅焖饭到起锅巴→铺腊肠片→淋无麸质酱油"],
+["咖喱鸡肉饭","主食",1,"咖喱块含小麦粉！用咖喱粉炒","孩子爱,下饭","鸡腿·土豆·胡萝卜·咖喱粉·椰浆","洋葱炒软加咖喱粉炒香→下鸡块和菜→加椰浆和水炖20分钟"],
+["炒河粉","主食",1,"河粉是米做的，酱油换无麸质","快手,下饭","河粉·豆芽·鸡蛋·韭菜","河粉先抖散→大火快炒→最后淋无麸质酱油"],
+["番茄牛肉拌饭","主食",1,"酱油换无麸质","下饭,孩子爱","牛肉片·西红柿·米饭","西红柿炒成酱→下牛肉片→浇饭上"],
+["酸辣粉","主食",1,"红薯粉安全，醋要米醋、酱油要无麸质","下饭","红薯粉·花生·香菜·米醋·辣椒油","粉煮软→碗里调米醋+无麸质酱油+辣椒油+蒜水→浇热汤"],
+["螺蛳粉","主食",1,"米粉安全，酸笋包和汤料包要挑","下饭","米粉·酸笋·腐竹·花生","袋装挑配料表没小麦的版本"],
+["疙瘩汤","主食",2,"疙瘩就是面粉搅的","","面粉·西红柿·鸡蛋","换玉米面疙瘩（玉米面+水搓），口感差一点但能吃"],
+["韭菜盒子","主食",2,"烫面是小麦","","面粉·韭菜·鸡蛋·虾皮","换米皮包了煎"],
+["鸡蛋饼 / 摊饼","主食",2,"面糊是面粉","","面粉·鸡蛋·葱花","换土豆淀粉+鸡蛋摊，或者玉米面糊"],
+["三明治","主食",2,"面包","","吐司·火腿·生菜·鸡蛋","换米饭饼或无麸质面包"],
+["牛肉面","主食",1,"面条换米粉或红薯粉","下饭,高蛋白","牛腩·米粉·香菜","牛腩炖1小时→浇在煮好的米粉上"],
+["羊肉泡馍","主食",2,"馍是死面饼","","馍·羊肉汤·粉丝","换羊肉汤泡米饭"],
+["寿司卷","主食",0,"米饭+海苔+醋，醋用米醋","孩子爱,少油","米饭·海苔·米醋·黄瓜·煎蛋条","米醋+糖+盐拌饭→铺海苔卷紧→蟹棒换煎蛋条"],
+["东北大饭包","主食",0,"米饭+土豆泥+鸡蛋酱，酱用无麸质黄豆酱","东北,一锅出","米饭·土豆·鸡蛋·无麸质黄豆酱·生菜","鸡蛋炒成酱→和土豆泥米饭拌一起→用生菜包着吃"],
+
+/* ---------------- 素菜 ---------------- */
+["大拌菜","素菜",0,"关键是别放酱油，用盐+米醋+香油+蒜","快手,凉拌,少油,东北","黄瓜·西红柿·生菜·洋葱·香菜","菜手撕成块→盐、米醋、香油、蒜末拌→最后一分钟再拌"],
+["炝拌土豆丝","素菜",0,"","快手,凉拌,下饭,东北","土豆·干辣椒·米醋","土豆切细丝泡水洗淀粉→焯30秒过凉→热油泼干辣椒→拌盐和米醋"],
+["蚝油生菜","素菜",1,"蚝油多半含小麦粉增稠","快手","生菜·蚝油·蒜","生菜焯10秒摆盘→蒜末炒香加蚝油和水→浇上"],
+["炝炒油麦菜","素菜",0,"","快手,少油","油麦菜·蒜·干辣椒","大火30秒，只放盐"],
+["豆豉鲮鱼油麦菜","素菜",1,"豆豉和罐头调味汁常含小麦","快手,下饭","油麦菜·豆豉鲮鱼罐头","罐头挑配料干净的→连油一起下锅炒菜"],
+["蒜蓉蒿子杆","素菜",0,"","快手,少油","蒿子杆·蒜","蒜蓉爆香大火炒1分钟"],
+["凉拌菠菜粉丝花生米","素菜",0,"粉丝挑绿豆或红薯的，别买掺小麦的","凉拌,下饭","菠菜·粉丝·花生米·米醋","菠菜焯水挤干→粉丝煮软过凉→米醋香油盐拌"],
+["拌豆苗","素菜",0,"","快手,凉拌,少油","豌豆苗·蒜·米醋","豆苗焯10秒→拌盐米醋香油"],
+["小葱拌豆腐","素菜",0,"","快手,凉拌,少油","内酯豆腐·小葱·香油","豆腐切块→撒葱花和盐→淋香油，不加酱油才正宗"],
+["拍黄瓜","素菜",0,"","快手,凉拌,少油","黄瓜·蒜·米醋","拍碎切段→盐杀水→蒜末米醋香油"],
+["白菜干豆腐","素菜",1,"干豆腐是豆制品安全，酱油要换","快手","白菜·干豆腐·蒜","干豆腐切条先煸香→下白菜炒软→淋无麸质酱油"],
+["洋葱炒鸡蛋","素菜",0,"","快手,孩子爱","洋葱·鸡蛋","洋葱炒到透明→倒回炒蛋→只放盐"],
+["西红柿炒鸡蛋","素菜",0,"","快手,孩子爱,下饭","西红柿·鸡蛋","鸡蛋先炒散盛出→西红柿炒出汁→合炒加糖和盐"],
+["青椒土豆片","素菜",0,"","快手,下饭","青椒·土豆","土豆片泡水→热油炒到边缘透明→下青椒只放盐"],
+["炒菜花","素菜",0,"","快手,少油","菜花·蒜","菜花焯水30秒→蒜片爆香大火炒"],
+["干锅菜花","素菜",1,"干锅酱含小麦","下饭","菜花·五花肉片·干辣椒","肉片煸出油→下菜花炒到焦边→用盐+辣椒+无麸质酱油调味"],
+["白菜炖豆腐","素菜",0,"","一锅出,少油,东北","白菜·北豆腐·粉条","豆腐先煎定型→下白菜和粉条→水炖15分钟只放盐"],
+["烤口蘑","素菜",0,"","快手,烤,少油","口蘑·橄榄油·盐","去蒂刷油→200度烤15分钟→撒盐和黑胡椒，出汁最好喝"],
+["地三鲜","素菜",0,"传统就是土豆淀粉勾芡，一道面粉都不用","下饭,东北","茄子·土豆·青椒·土豆淀粉","茄子土豆炸到微焦→合炒→用盐糖无麸质酱油+淀粉水收汁"],
+["炒蒜苔","素菜",0,"","快手,下饭","蒜苔·肉丝（可省）","蒜苔焯水30秒→大火炒2分钟放盐"],
+["炒西葫芦片","素菜",0,"","快手,少油","西葫芦·蒜","大火快炒，出水就出锅"],
+["西兰花蘸麻酱","素菜",0,"麻酱安全","快手,少油","西兰花·芝麻酱","西兰花焯1分钟→麻酱用温水澥开加盐"],
+["蒜蓉娃娃菜","素菜",0,"","快手,少油","娃娃菜·蒜","蒜末一半炒香一半生拌→蒸8分钟淋热油"],
+["醋溜白菜","素菜",0,"用米醋","快手,下饭,少油","白菜·米醋·干辣椒","白菜帮斜刀片→大火炒→米醋和糖沿锅边淋"],
+["酸辣土豆丝","素菜",0,"","快手,下饭,孩子爱","土豆·干辣椒·米醋","切细丝洗净淀粉→大火30秒→米醋+盐+辣椒"],
+["手撕包菜","素菜",0,"","快手,少油","包菜·干辣椒·蒜","手撕成片→大火炒到边缘焦→只放盐"],
+["韭菜炒鸡蛋","素菜",0,"","快手,孩子爱","韭菜·鸡蛋","蛋炒散盛出→韭菜下锅10秒→合炒放盐"],
+["干煸豆角","素菜",0,"","下饭","豆角·干辣椒·蒜","豆角煸到起皱→下蒜和辣椒炒→盐"],
+["拔丝地瓜","素菜",0,"糖+淀粉，安全","孩子爱,炸","红薯·糖·土豆淀粉","地瓜块裹淀粉炸金黄→糖熬到浅黄→快速翻匀"],
+["蒸茄子蘸蒜泥","素菜",0,"比红烧茄子安全得多，几乎不用酱油","少油,凉拌","茄子·蒜·米醋","茄子整条蒸15分钟→撕条→蒜泥+米醋+盐+香油"],
+["香菇油菜","素菜",1,"酱油换无麸质，或改用蚝油（也要挑）","快手","油菜·香菇","香菇炒香→下油菜→盐+无麸质酱油"],
+["虎皮尖椒","素菜",1,"传统浇酱油","下饭","尖椒·蒜·无麸质酱油","尖椒干锅煎到起虎皮→蒜末+无麸质酱油+糖+米醋收汁"],
+["尖椒干豆腐","素菜",1,"酱油换无麸质；东北下饭菜","快手,下饭,东北","尖椒·干豆腐·蒜","干豆腐切条煎一下→下尖椒炒→无麸质酱油调味"],
+["东北大拉皮","素菜",0,"拉皮是土豆或绿豆淀粉做的，天生无麸质","凉拌,东北,孩子爱","拉皮·黄瓜·胡萝卜·麻酱","拉皮泡软切条→麻酱+米醋+盐+蒜拌（别放酱油）"],
+["蘸酱菜","素菜",1,"大酱含小麦粉，这是东北菜的命门","东北,少油","黄瓜·生菜·小葱·无麸质黄豆酱","蔬菜洗净冰镇→酱用无麸质黄豆酱炒鸡蛋"],
+["酸菜炒粉条","素菜",1,"酱油换无麸质","下饭,东北","酸菜·红薯粉条·五花肉","五花肉煸出油→下酸菜炒香→加粉条和水焖10分钟"],
+["蒜蓉丝瓜","素菜",0,"","快手,少油","丝瓜·蒜","丝瓜滚刀块→蒜爆香→炒到出水"],
+["凉拌木耳","素菜",0,"","快手,凉拌,少油","木耳·小米辣·米醋·蒜","木耳泡发焯1分钟→米醋香油盐蒜拌"],
+["素炒三丝","素菜",1,"酱油换无麸质","快手","土豆·胡萝卜·青椒","三样切丝分别炒→合炒放盐和无麸质酱油"],
+["腐竹拌黄瓜","素菜",1,"腐竹安全，调味别放酱油","凉拌","腐竹·黄瓜·蒜·米醋","腐竹温水泡透焯一下→米醋香油盐拌"],
+
+/* ---------------- 半荤 ---------------- */
+["黄瓜金针菇拌鸡胸","半荤",0,"","凉拌,高蛋白,少油","鸡胸·金针菇·黄瓜·蒜","鸡胸煮熟撕丝→金针菇焯熟→米醋香油盐蒜拌"],
+["青椒丝炒肉","半荤",1,"酱油换无麸质","快手,下饭","青椒·猪肉丝","肉丝上浆（淀粉）滑散→下青椒丝→无麸质酱油"],
+["鸡爪年糕","半荤",1,"年糕是糯米安全，酱汁里的酱油要换","下饭,孩子爱","鸡爪·年糕·干辣椒","鸡爪焯水炖20分钟→下年糕收汁→无麸质酱油+糖"],
+["烤牛肉粒拌洋葱土豆丁","半荤",0,"只用盐、黑胡椒、孜然就很好吃","烤,高蛋白,孩子爱","牛里脊·洋葱·土豆·黑胡椒","土豆丁先烤15分钟→牛肉粒大火煎→拌洋葱和黑胡椒"],
+["咖喱鸡腿","半荤",1,"咖喱块含小麦粉，改用咖喱粉","下饭,孩子爱","鸡腿·土豆·胡萝卜·咖喱粉","鸡腿煎香→洋葱炒软加咖喱粉→下菜和水炖20分钟"],
+["小鸡炖蘑菇","半荤",1,"酱油换无麸质；蘑菇和鸡本身安全","炖,一锅出,东北,下饭","小鸡·榛蘑·粉条·葱姜","鸡块焯水炒香→加无麸质酱油和大料→下泡好的榛蘑炖40分钟→最后放粉条"],
+["牛肉炖土豆","半荤",1,"酱油换无麸质","炖,一锅出,下饭","牛腩·土豆·胡萝卜·西红柿","牛腩焯水炒糖色→加无麸质酱油和西红柿→炖1小时→下土豆再20分钟"],
+["猪骨炖藕","半荤",0,"清炖不放酱油就安全","炖,一锅出,少油","猪骨·莲藕·山药·姜","猪骨焯水→加姜片和水炖1小时→下藕和山药再30分钟→只放盐"],
+["肉沫豇豆角","半荤",1,"酱油换无麸质","下饭","豆角·肉末·蒜","豆角切丁煸到起皱→下肉末炒散→无麸质酱油"],
+["溜肉段","半荤",0,"东北传统用土豆淀粉挂糊，天生无麸质","炸,下饭,东北,孩子爱","猪里脊·土豆淀粉·青椒","肉段用土豆淀粉糊抓匀→六成油温炸定型→复炸酥→蒜末+盐+无麸质酱油勾薄芡翻匀"],
+["京酱肉丝","半荤",1,"甜面酱是小麦做的，必须换","下饭,东北","猪里脊·无麸质甜面酱·葱丝","肉丝上浆滑散→无麸质甜面酱+糖炒香→铺葱丝上，用豆腐皮卷"],
+["鱼香肉丝","半荤",1,"泡椒和调料汁里的酱油换无麸质","下饭,孩子爱","里脊·木耳·胡萝卜·米醋","肉丝上浆滑散→下配菜→米醋+糖+无麸质酱油+淀粉汁收"],
+["宫保鸡丁","半荤",1,"酱油换无麸质","下饭","鸡腿肉·花生·干辣椒","鸡丁上浆滑炒→辣椒花椒爆香→无麸质酱油+米醋+糖+淀粉汁"],
+["木须肉","半荤",1,"酱油换无麸质","快手,下饭","鸡蛋·木耳·黄瓜·肉片","鸡蛋炒散盛出→肉片滑炒→下木耳黄瓜→合炒调味"],
+["蚂蚁上树","半荤",1,"粉丝安全，豆瓣酱含小麦","下饭","红薯粉丝·肉末·豆瓣酱（换）","粉丝泡软→肉末炒散→加无麸质豆瓣酱炒香→下粉丝收汁"],
+["回锅肉","半荤",1,"豆瓣酱含小麦粉，这是川菜的坑","下饭","五花肉·蒜苗·豆瓣酱（换）","五花肉煮到七成熟切薄片→煸出灯盏窝→下无麸质豆瓣酱"],
+["肉末茄子","半荤",1,"酱油换无麸质","下饭","茄子·肉末·蒜","茄子先蒸10分钟（省油）→肉末炒香→合炒淋无麸质酱油"],
+["烤鸡翅 / 烤鸡腿","半荤",0,"只用盐、孜然、辣椒、蜂蜜就不含麸质","烤,孩子爱,高蛋白","鸡翅·孜然·辣椒面·蜂蜜","划刀腌2小时（盐+孜然+辣椒+蒜）→200度烤25分钟→最后刷蜂蜜"],
+["蒜蓉粉丝蒸虾","半荤",1,"蒸鱼豉油含小麦，换无麸质酱油","蒸,待客,高蛋白","大虾·粉丝·蒜","虾开背铺粉丝→蒜蓉炒香铺上→蒸8分钟→淋无麸质酱油和热油"],
+["虾仁滑蛋","半荤",0,"","快手,高蛋白,孩子爱","虾仁·鸡蛋·淀粉","虾仁用淀粉蛋清抓过→滑炒变色→倒入蛋液推散"],
+["土豆炖豆角","半荤",1,"东北大酱含小麦","炖,一锅出,东北,下饭","土豆·豆角·五花肉·无麸质大酱","五花肉煸出油→下豆角炒绿→加无麸质大酱和水→下土豆炖20分钟"],
+["排骨炖豆角","半荤",1,"酱油换无麸质","炖,一锅出,东北,下饭","排骨·豆角·土豆","排骨焯水炒香→加无麸质酱油→下豆角土豆炖30分钟"],
+["白菜猪肉炖粉条","半荤",1,"酱油换无麸质","炖,一锅出,东北,下饭","白菜·五花肉·红薯粉条","五花肉片煸出油→下白菜炒软→加水下粉条炖15分钟→无麸质酱油"],
+["肉末蒸蛋","半荤",1,"酱油换无麸质","快手,孩子爱,少油","鸡蛋·猪肉末","蛋液蒸10分钟→肉末用无麸质酱油炒香→浇上"],
+["冬瓜丸子汤","半荤",0,"丸子用淀粉+蛋清打，别加面粉","汤,少油,孩子爱","冬瓜·猪肉馅·土豆淀粉","肉馅加淀粉蛋清打上劲→挤丸子下锅→下冬瓜煮到透明→盐和胡椒"],
+["虾仁豆腐","半荤",1,"酱油换无麸质","快手,高蛋白","虾仁·嫩豆腐","豆腐切块焯水→虾仁滑炒→合烧→无麸质酱油勾薄芡"],
+["韭菜炒鱿鱼","半荤",1,"酱油换无麸质","快手,高蛋白","鱿鱼·韭菜·蒜","鱿鱼切花刀焯10秒→蒜爆香大火炒→下韭菜→盐"],
+["丸子的三种做法（汆/炸/蒸）","半荤",0,"全靠土豆淀粉，替代一切「面粉丸子」","孩子爱,一锅出","猪肉馅·土豆淀粉·蛋清·姜水","肉馅+淀粉+蛋清+姜水打上劲→汆、炸、蒸都行，煎丸子还能夹饼"],
+["豆腐皮卷菜","半荤",0,"豆皮安全，比春卷皮靠谱","快手,孩子爱","豆腐皮·肉丝·黄瓜·胡萝卜","豆腐皮焯软→卷上炒好的肉丝和菜→切段，蘸麻酱"],
+["洋葱黑椒牛肉粒","半荤",0,"只用盐和黑胡椒，不放酱油最香","快手,高蛋白,孩子爱","牛里脊·洋葱·黑胡椒·黄油","牛肉切粒用盐和黑胡椒抓匀→大火煎变色→下洋葱炒软→化一块黄油拌匀"],
+["蒜香煎鸡腿排","半荤",0,"盐+蒜+黑胡椒，不用酱油","快手,高蛋白,孩子爱","去骨鸡腿·蒜·黑胡椒","鸡腿排用盐蒜黑胡椒腌20分钟→皮朝下小火煎8分钟→翻面再5分钟"],
+["鸡蛋抱豆腐","半荤",0,"","快手,孩子爱,少油","嫩豆腐·鸡蛋·小葱","豆腐切块煎一下→倒蛋液裹住→小火焖2分钟→撒葱花淋香油"],
+["烤鸡腿配时蔬","半荤",0,"一个烤盘出，不想动锅的晚上","烤,高蛋白,少油","鸡腿·土豆·洋葱·彩椒·盐","鸡腿和蔬菜拌油盐铺烤盘→200度烤35分钟"],
+["猪蹄炖黄豆","半荤",0,"清炖不放酱油，汤是奶白的","炖,一锅出,少油","猪蹄·黄豆·姜","猪蹄焯水→加泡好的黄豆和姜炖1.5小时→只放盐"],
+["煎鸡胸配土豆泥","半荤",0,"","高蛋白,少油,快手","鸡胸·土豆·牛奶·黑胡椒","鸡胸拍松用盐黑胡椒腌→大火每面2分钟→配土豆泥"],
+
+/* ---------------- 荤菜 ---------------- */
+["锅包肉","荤菜",0,"东北老做法就是土豆淀粉挂糊，一道面粉不用——这是咱家最该多做的一道","炸,待客,东北,孩子爱","猪里脊·土豆淀粉·米醋·糖·胡萝卜丝","里脊片用盐抓匀→土豆淀粉加水调成能挂住的糊→六成油温炸定型→复炸到金黄→米醋+糖+盐熬到起泡裹匀"],
+["糖醋里脊","荤菜",0,"土豆淀粉挂糊、米醋调汁，本来就没面粉；番茄酱挑配料表干净的","炸,孩子爱","里脊·土豆淀粉·米醋·番茄酱","同上，最后用米醋+糖+番茄酱收汁"],
+["清炖牛肋条","荤菜",0,"只放葱姜和盐，最干净的一道硬菜","炖,高蛋白,待客","牛肋条·葱姜·花椒","冷水下锅焯净→加葱姜花椒小火炖1.5小时→出锅只放盐，蘸蒜泥吃"],
+["酱牛肉","荤菜",1,"酱油和黄酱都含小麦，用无麸质酱油+黄豆酱","炖,待客,高蛋白","牛腱·无麸质酱油·黄豆酱·香料","牛腱泡血水→下香料和无麸质酱料小火卤1.5小时→关火泡一夜"],
+["糖醋排骨","荤菜",0,"用米醋和糖，不放酱油就是干净的","下饭,孩子爱,待客","排骨·米醋·糖·姜","排骨焯水→少油煎香→米醋+糖+水焖30分钟→大火收汁"],
+["烤鸡（整只）","荤菜",0,"只用盐、黑胡椒、蒜、柠檬","烤,待客,高蛋白","整鸡·盐·黑胡椒·蒜·柠檬","全身抹盐和黑胡椒冷藏腌一夜→200度烤50分钟→中途刷油"],
+["烤鸭","荤菜",1,"鸭皮刷的脆皮水和蘸的甜面酱都含麦；卷饼更是面粉","待客","鸭·甜面酱·荷叶饼","想吃就买现成烤鸭只吃皮和肉，不蘸酱、不卷饼"],
+["清蒸鱼","荤菜",1,"蒸鱼豉油含小麦，最省事的办法是只用盐+热油+葱姜","蒸,高蛋白,待客,少油","鲈鱼·葱姜·盐·热油","鱼身划刀抹盐→水开上锅蒸8分钟→倒掉汤水→铺葱丝淋热油"],
+["煎鱼","荤菜",0,"拍一层淀粉，别拍面粉","快手,高蛋白","黄花鱼/带鱼·土豆淀粉·盐","鱼擦干拍淀粉→热锅冷油煎定型→翻面煎黄→撒盐和胡椒"],
+["煎牛排","荤菜",0,"","快手,高蛋白,孩子爱","牛排·盐·黑胡椒·黄油","室温回温擦干→大火每面90秒→加黄油蒜淋油→静置5分钟"],
+["炸蘑菇","素菜",0,"土豆淀粉糊，比面粉糊更脆","炸,孩子爱,东北","平菇·土豆淀粉·椒盐","平菇撕条攥干→裹土豆淀粉糊→六成油温炸两遍→撒椒盐"],
+["自制香肠","荤菜",1,"肠衣和部分灌肠料含小麦；自己灌最放心","待客,孩子爱","猪肉·肠衣·盐·蒜·黑胡椒","肉丁拌盐和香料灌进肠衣→扎孔晾一天→蒸20分钟或煎"],
+["熟食 / 酱货","荤菜",1,"天津酱货几乎都用酱油+面粉上色，别随便买","快手,下饭","酱牛肉·卤鸡腿（建议自制）","想吃自己做酱牛肉、卤鸡腿，用无麸质酱油"],
+["鸭货卤味","荤菜",1,"卤水全靠酱油和料酒","下饭,待客","鸭翅·无麸质酱油·香料","自己卤：无麸质酱油+冰糖+香料+干辣椒卤40分钟"],
+["辣炒黄蚬子","荤菜",1,"酱油和料酒都要换","下饭,待客","黄蚬子·干辣椒·蒜·无麸质酱油","蚬子吐沙→蒜和辣椒爆香→大火炒到开口→淋无麸质酱油"],
+["烤生蚝","荤菜",1,"蒜蓉酱里常加酱油或蚝油","烤,待客","生蚝·粉丝·蒜蓉","蒜蓉一半炸一半生→铺在蚝上→200度烤8分钟"],
+["麻辣小龙虾","荤菜",1,"底料和啤酒都含麦","下饭,待客","小龙虾·干辣椒·花椒·无麸质底料","小龙虾刷净→底料炒香→加水和白酒煮15分钟"],
+["铁锅炖大鹅","荤菜",1,"大酱是核心，必须用无麸质黄豆酱","炖,一锅出,东北,待客","大鹅·土豆·无麸质大酱·葱姜","鹅块焯水炒香→下无麸质大酱炒出酱香→加水炖1小时→下土豆"],
+["杀猪菜","荤菜",1,"血肠有的掺荞麦或面粉，酸菜和五花肉安全","炖,一锅出,东北","酸菜·五花肉·血肠·骨头","骨头炖汤→下酸菜和五花肉炖40分钟→血肠最后放，煮10分钟"],
+["酸菜白肉","荤菜",0,"不放酱油，靠酸菜本身的酸味","炖,一锅出,东北,待客","酸菜·五花肉·粉条","五花肉整块煮到八成熟切片→酸菜炒香→加肉汤炖30分钟→下粉条"],
+["红烧肉","荤菜",1,"酱油换无麸质，或者只炒糖色不放酱油","下饭,待客,孩子爱","五花肉·冰糖·无麸质酱油","五花肉焯水→炒糖色→加无麸质酱油和热水炖1小时→收汁"],
+["梅菜扣肉","荤菜",1,"酱油换无麸质","待客,下饭","五花肉·梅干菜·无麸质酱油","五花肉煮后炸皮→切片码碗→铺炒过的梅干菜→蒸1.5小时"],
+["粉蒸肉","荤菜",1,"蒸肉米粉是大米磨的，安全；腌肉的酱料常含小麦，用盐+糖+无麸质腐乳","蒸,待客","五花肉·蒸肉米粉·红薯","肉片拌米粉和腐乳汁（挑无麸质的）→铺红薯上蒸1小时"],
+["手把肉","荤菜",0,"清水煮，只放盐和葱姜","炖,高蛋白,待客","羊排·葱姜·盐","冷水下锅撇沫→只放葱姜煮50分钟→蘸盐或韭菜花"],
+["孜然羊肉","荤菜",0,"孜然辣椒和盐就够了，别放酱油","快手,高蛋白,下饭","羊腿肉·孜然·辣椒面·洋葱","羊肉片大火爆炒→下洋葱→撒孜然辣椒和盐"],
+["葱爆羊肉","荤菜",1,"酱油换无麸质","快手,下饭","羊肉片·大葱·米醋","羊肉大火爆炒→下葱段→沿锅边淋米醋和无麸质酱油"],
+["涮羊肉火锅","荤菜",1,"蘸料别放生抽；锅底用清汤","一锅出,待客,高蛋白","羊肉片·白菜·豆腐·麻酱","清汤锅底（葱姜枸杞）→麻酱+韭菜花+香菜蘸→丸子类不点"],
+["烤羊排","荤菜",0,"盐、孜然、辣椒","烤,待客,高蛋白","羊排·孜然·盐","腌一夜→200度烤30分钟"],
+["酱大骨","荤菜",1,"全靠酱油和黄酱上色","炖,待客,东北","猪大骨·无麸质酱油·黄豆酱","大骨焯水→下无麸质酱料和香料炖1.5小时→收汁"],
+["排骨炖玉米","荤菜",0,"清炖不放酱油","炖,一锅出,孩子爱,少油","排骨·玉米·胡萝卜","排骨焯水→加玉米段炖1小时→只放盐"],
+["椒盐虾","荤菜",0,"拍土豆淀粉","炸,孩子爱,高蛋白","大虾·土豆淀粉·椒盐","虾开背拍淀粉→炸到酥→撒椒盐"],
+["白灼虾","荤菜",0,"蘸料用米醋+姜末+盐，不放酱油","快手,高蛋白,少油","大虾·姜·米醋","水开下虾煮2分钟→冰镇→蘸姜醋汁"],
+["蒜蓉扇贝","荤菜",1,"蒜蓉酱常加酱油","蒸,待客","扇贝·粉丝·蒜","粉丝垫底→蒜蓉铺上→蒸6分钟→淋热油"],
+["水煮肉片","荤菜",1,"郫县豆瓣酱含小麦粉","下饭","里脊·豆芽·豆瓣酱（换）","肉片上浆→豆芽垫底→无麸质豆瓣酱炒香加水→滑入肉片→泼热油"],
+["麻婆豆腐","荤菜",1,"豆瓣酱含小麦，豆豉也要看配料","下饭","嫩豆腐·牛肉末·豆瓣酱（换）","豆腐焯水→无麸质豆瓣酱炒香→下肉末和高汤→勾芡→撒花椒面"],
+["大盘鸡","荤菜",1,"豆瓣酱和啤酒都含麦","炖,一锅出,待客","鸡块·土豆·青椒·豆瓣酱（换）","鸡块炒香→下无麸质豆瓣酱→加水和土豆炖20分钟→下青椒皮带面（换米粉）"],
+["啤酒鸭","荤菜",2,"啤酒是大麦酿的，这道的灵魂正好是雷","","鸭·啤酒·青红椒","换白酒+水，风味差一截，但能吃"],
+["可乐鸡翅","荤菜",1,"酱油换无麸质","孩子爱,下饭","鸡翅·可乐·无麸质酱油","鸡翅煎黄→倒可乐没过→加无麸质酱油收汁"],
+["红烧带鱼","荤菜",1,"拍淀粉煎，酱油换无麸质","下饭,孩子爱","带鱼·土豆淀粉·无麸质酱油","带鱼拍淀粉煎定型→葱姜爆香→无麸质酱油+糖+水焖15分钟"],
+["得莫利炖鱼","荤菜",1,"酱油和啤酒双料含麦","炖,一锅出,东北","鲤鱼·豆腐·粉条·无麸质酱油","鱼煎定型→加无麸质酱油和水→下豆腐粉条炖25分钟"],
+["白切肉","荤菜",1,"肉本身安全，蘸料别用酱油","少油,待客","五花肉·蒜泥·米醋","整块煮40分钟→冰镇切薄片→蒜泥+米醋+盐蘸"],
+["溜肝尖","荤菜",1,"酱油换无麸质","快手,高蛋白","猪肝·木耳·青椒","猪肝切片泡水→上浆滑炒→下配菜→无麸质酱油勾芡"],
+["炸鸡排","荤菜",0,"裹土豆淀粉或玉米片碎，别裹面包糠","孩子爱,炸","鸡胸·土豆淀粉·玉米片","鸡胸拍松腌味→裹淀粉+蛋液+压碎的玉米片→炸到金黄"],
+
+/* ---------------- 凉菜 ---------------- */
+["老醋花生","凉菜",0,"用米醋或陈醋（挑无麸质的）","凉拌,下饭,下酒","花生米·米醋·洋葱·香菜","花生炸或烤酥→晾凉拌洋葱香菜和醋汁"],
+["拌海带丝","凉菜",0,"","凉拌,少油","海带丝·蒜·米醋","海带丝焯2分钟→米醋蒜末盐拌"],
+["蒜泥白肉","凉菜",1,"蘸料别放酱油，用蒜泥+米醋+辣椒油","凉拌,待客","五花肉·蒜泥·米醋","五花肉煮到筷子能穿透→冰镇切薄片→蒜泥米醋蘸"],
+["口水鸡","凉菜",1,"红油汁里通常有生抽","凉拌,下饭","鸡腿·辣椒油·花椒·米醋","鸡腿煮熟冰镇→手撕→辣椒油+米醋+糖+蒜水浇上"],
+["皮蛋豆腐","凉菜",1,"酱油换无麸质","快手,凉拌","皮蛋·内酯豆腐·小葱","豆腐切块→摆皮蛋→淋无麸质酱油和香油"],
+["麻酱豇豆","凉菜",0,"麻酱安全","凉拌,少油","豇豆·芝麻酱·蒜","豇豆焯熟过凉→麻酱澥开加盐和蒜"],
+["老虎菜","凉菜",0,"青椒葱香菜，米醋拌","快手,凉拌,东北,下饭","青椒·大葱·香菜·米醋","全部切丝→米醋+盐+香油拌"],
+["糖拌西红柿","凉菜",0,"","快手,凉拌,孩子爱","西红柿·糖","切块撒糖冰镇20分钟，出汤最好喝"],
+["凉拌金针菇","凉菜",0,"","快手,凉拌,少油","金针菇·小米辣·米醋","焯1分钟过凉→米醋蒜末辣椒拌"],
+["手撕鸡","凉菜",1,"调味别用酱油","凉拌,高蛋白","鸡腿·香菜·辣椒油","鸡腿煮熟撕条→辣椒油+米醋+盐+蒜拌"],
+["肉皮冻","凉菜",0,"","凉拌,待客,东北","猪皮·葱姜","猪皮刮净油脂→加水熬2小时→冷藏凝固→切块蘸蒜泥"],
+["拌豆腐丝","凉菜",1,"豆腐丝安全，酱油换无麸质","快手,凉拌","豆腐丝·黄瓜·蒜","豆腐丝焯一下→米醋香油盐拌"],
+["凉拌莴笋","凉菜",0,"","快手,凉拌,少油","莴笋·蒜·米醋","莴笋切丝盐杀水→米醋香油拌"],
+["拌萝卜皮","凉菜",0,"","快手,凉拌,下饭","心里美萝卜·米醋·糖","萝卜皮切丝→糖醋盐拌，解腻"],
+["蒜泥茄子","凉菜",0,"","凉拌,少油","茄子·蒜泥·米醋","茄子蒸15分钟撕条→蒜泥米醋盐香油拌"],
+
+/* ---------------- 汤 ---------------- */
+["海带土豆汤","汤",0,"","汤,少油","海带·土豆·葱","海带泡发切丝炒一下→加土豆条和水煮15分钟→盐和胡椒"],
+["西红柿鸡蛋汤","汤",0,"","汤,快手,孩子爱","西红柿·鸡蛋·香菜","西红柿炒出汁→加水煮开→淋蛋液→盐和香油"],
+["冬瓜肉丸汤","汤",0,"丸子用淀粉打","汤,少油,孩子爱","冬瓜·肉馅·土豆淀粉","肉馅加淀粉打上劲挤丸子→下冬瓜煮到透明→盐胡椒"],
+["紫菜蛋花汤","汤",0,"","汤,快手,少油","紫菜·鸡蛋·虾皮","水开下紫菜虾皮→淋蛋液→盐香油"],
+["白菜豆腐汤","汤",0,"","汤,少油","白菜·豆腐·粉条","白菜炒软加水→下豆腐粉条煮10分钟→盐"],
+["排骨玉米汤","汤",0,"","汤,一锅出,孩子爱","排骨·玉米·胡萝卜","排骨焯水→加玉米炖1小时→盐"],
+["萝卜牛腩汤","汤",0,"","汤,高蛋白","牛腩·白萝卜·姜","牛腩焯水炖1小时→下萝卜再20分钟→盐胡椒香菜"],
+["鲫鱼豆腐汤","汤",0,"煎鱼用淀粉不用面粉","汤,高蛋白","鲫鱼·豆腐·姜","鲫鱼煎两面→加开水大火煮到奶白→下豆腐煮10分钟"],
+["黄瓜皮蛋汤","汤",0,"","汤,快手,少油","黄瓜·皮蛋·姜丝","水开下姜丝皮蛋→下黄瓜片→盐香油"],
+["丝瓜蛋汤","汤",0,"","汤,快手,少油","丝瓜·鸡蛋","丝瓜炒软加水→淋蛋液→盐"],
+["菌菇汤","汤",0,"","汤,少油,快手","口蘑·金针菇·白玉菇·葱","菌菇先干煸出香→加水煮10分钟→盐和胡椒"],
+["冬瓜虾皮汤","汤",0,"","汤,快手,少油","冬瓜·虾皮·葱","虾皮炒香→下冬瓜和水煮到透明→盐"],
+["番茄豆腐汤","汤",0,"","汤,快手,少油","西红柿·嫩豆腐·葱","西红柿炒出汁加水→下豆腐煮5分钟→盐"],
+["酸辣汤","汤",1,"酱油和醋都要换","汤,下饭","豆腐·木耳·鸡蛋·米醋·白胡椒","配料切丝煮开→勾芡→淋蛋液→米醋和白胡椒最后放"],
+["羊肉萝卜汤","汤",0,"","汤,高蛋白","羊肉·白萝卜·姜","羊肉焯水加姜炖1小时→下萝卜再20分钟→盐和香菜"],
+["番茄牛腩汤","汤",0,"","汤,高蛋白,孩子爱","牛腩·西红柿·洋葱","牛腩焯水→和炒软的西红柿一起炖1小时→盐"],
+["玉米排骨汤（加山药）","汤",0,"","汤,一锅出,孩子爱","排骨·玉米·山药","排骨焯水→加玉米山药炖1小时→盐"]
+];
+
+const CATS = ["早餐","主食","素菜","半荤","荤菜","凉菜","汤"];
+
+(function () {
+  'use strict';
+
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  var LS = {
+    get: function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+  };
+
+  var K_HIST = 'jcs_history_v1', K_PANTRY = 'jcs_pantry_v1', K_WEEK = 'jcs_week_v1';
+
+  // 用「文件」App 预览时浏览器存储可能不可用，这时记不住东西，得提示一下
+  var STORAGE_OK = (function () {
+    try {
+      localStorage.setItem('jcs_probe', '1');
+      localStorage.removeItem('jcs_probe');
+      return true;
+    } catch (e) { return false; }
+  })();
+
+  /* ---------- 菜品索引 ---------- */
+  var POOL = {};
+  CATS.forEach(function (c) {
+    POOL[c] = DISHES.filter(function (d) { return d[1] === c; });
+  });
+  function tags(d) { return d[4] ? d[4].split(',') : []; }
+  function has(d, t) { return tags(d).indexOf(t) >= 0; }
+  function gfLabel(g) { return g === 0 ? '本色无麸' : (g === 1 ? '换一下' : '含小麦'); }
+
+  /* ---------- 状态 ---------- */
+  var state = {
+    mode: 'dinner',
+    conds: { strict: true, quick: false, stew: false, protein: false },
+    meal: null,
+    view: 'meal'
+  };
+
+  /* ---------- 抽签 ---------- */
+  function match(d, k) {
+    if (k === 'quick') return has(d, '快手');
+    if (k === 'stew') return has(d, '炖') || has(d, '一锅出');
+    if (k === 'protein') return has(d, '高蛋白');
+    return true;
+  }
+
+  function candidates(cat) {
+    var all = POOL[cat] || [];
+    var strict = state.conds.strict;
+    var extra = ['quick', 'stew', 'protein'].filter(function (k) { return state.conds[k]; });
+    // 含小麦的菜永远不参与推荐（它们在库里只作「别这么做」的参考）
+    var safe = all.filter(function (d) { return d[2] !== 2; });
+    var base = strict ? safe.filter(function (d) { return d[2] === 0; }) : safe;
+    if (!base.length) base = safe.slice();
+    if (!base.length) base = all.slice();
+
+    function flt(keys) {
+      return base.filter(function (d) {
+        return keys.every(function (k) { return match(d, k); });
+      });
+    }
+    var r = flt(extra);
+    for (var i = extra.length; i > 0 && r.length < 2; i--) {
+      r = flt(extra.slice(0, i - 1));
+    }
+    return r.length ? r : base;
+  }
+
+  function recentNames(days) {
+    var h = LS.get(K_HIST, []);
+    var cut = Date.now() - days * 86400000;
+    var s = {};
+    h.forEach(function (e) { if (e.t > cut) e.d.forEach(function (n) { s[n] = 1; }); });
+    return s;
+  }
+
+  function pick(cat, used, avoid) {
+    var list = candidates(cat).filter(function (d) { return !used[d[0]]; });
+    if (!list.length) list = candidates(cat);
+    if (!list.length) return null;
+    var fresh = list.filter(function (d) { return !avoid[d[0]]; });
+    var src = fresh.length ? fresh : list;
+    return src[Math.floor(Math.random() * src.length)];
+  }
+
+  function buildMeal(seen) {
+    var used = {}, avoid = recentNames(12), m = { mode: state.mode, items: [] };
+    if (seen) { Object.keys(seen).forEach(function (k) { avoid[k] = 1; }); }
+    function add(role, cls, cat) {
+      var d = pick(cat, used, avoid);
+      if (d) {
+        m.items.push({ role: role, cls: cls, cat: cat, d: d });
+        used[d[0]] = 1;
+        if (seen) seen[d[0]] = 1;
+      }
+    }
+    if (state.mode === 'breakfast') {
+      add('早饭', 'r1', '早餐');
+      add(Math.random() < 0.5 ? '小菜' : '汤', Math.random() < 0.5 ? 'r3' : 'r4', Math.random() < 0.5 ? '凉菜' : '汤');
+    } else {
+      add('主食', 'r2', '主食');
+      add('主菜', 'r1', Math.random() < 0.62 ? '荤菜' : '半荤');
+      add('素菜', 'r3', '素菜');
+      if (Math.random() < 0.72) add('汤', 'r4', '汤');
+    }
+    return m;
+  }
+
+  function mealTitle(m) {
+    if (m.mode === 'breakfast') return '早饭';
+    return m.mode === 'lunch' ? '午饭 / 带饭' : '晚饭';
+  }
+
+  /* ---------- 渲染：一餐 ---------- */
+  function renderMeal() {
+    var m = state.meal || (state.meal = buildMeal());
+    var allGF = m.items.every(function (it) { return it.d[2] === 0; });
+    var html = '<div class="meal"><div class="meal-top">' +
+      '<div><div class="tagline">' + mealTitle(m) + '</div>' +
+      '<div class="who">' + m.items.length + ' 道 · ' + (allGF ? '全部本色无麸质' : '含换法，看黄字') + ' · 三口人份</div></div>' +
+      '<div class="tiny">' + new Date().toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' }) + '</div></div>';
+
+    m.items.forEach(function (it, i) {
+      var d = it.d;
+      var sub = d[5] ? d[5].split('·').join(' · ') : '';
+      html += '<div class="line">' +
+        '<div class="role ' + it.cls + '">' + it.role + '</div>' +
+        '<div class="body"><div class="dn" data-open="' + d[0] + '">' + d[0] +
+        '<span class="badge b' + d[2] + '">' + gfLabel(d[2]) + '</span></div>' +
+        (sub ? '<div class="ds">' + sub + '</div>' : '') +
+        (d[2] === 1 && d[3] ? '<div class="ds"><em>换法：' + d[3] + '</em></div>' : '') +
+        (d[2] === 0 && d[3] && /淀粉|无麸|不放|只用|不用|纯/.test(d[3]) ? '<div class="ds">' + d[3] + '</div>' : '') +
+        '</div>' +
+        '<button class="swap-btn" data-swap="' + i + '">换</button></div>';
+    });
+    html += '</div>';
+    $('#mealOut').innerHTML = html;
+    state.view = 'meal';
+  }
+
+  /* ---------- 食材清单 ---------- */
+  function copyText(txt) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(txt); return true; }
+    } catch (e) { }
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = txt;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  function renderShop() {
+    var m = state.meal;
+    var set = {}, arr = [];
+    m.items.forEach(function (it) {
+      (it.d[5] || '').split('·').forEach(function (s) {
+        s = s.trim();
+        if (s && !set[s]) { set[s] = 1; arr.push(s); }
+      });
+    });
+    var names = m.items.map(function (it) { return it.d[0]; }).join(' · ');
+    var html = '<div class="card"><div class="card-h"><h2>这一顿要买的</h2>' +
+      '<span class="hint">' + arr.length + ' 样</span></div>';
+    html += '<div class="tiny" style="margin-bottom:10px">' + names + '</div>';
+    if (!arr.length) html += '<div class="empty">这几道菜没写详细食材，去菜单里看做法</div>';
+    else html += '<div class="chips">' + arr.map(function (s) {
+      return '<span class="chip" style="background:#fff">' + s + '</span>';
+    }).join('') + '</div>';
+    html += '<div class="hr"></div>';
+    html += '<div class="muted" style="font-size:12.5px">家里得备着：无麸质酱油 · 无麸质黄豆酱 · 米醋 · 白酒 · 土豆淀粉 · 红薯粉条</div>';
+    html += '<div class="hr"></div><div class="stack">';
+    html += '<button class="btn ghost sm" id="copyShop">📋 复制清单</button>';
+    html += '<button class="btn ghost sm" id="backMeal">← 回到这一餐</button>';
+    html += '</div></div>';
+    $('#mealOut').innerHTML = html;
+    $('#backMeal').onclick = renderMeal;
+    $('#copyShop').onclick = function () {
+      var txt = names + ' ｜ ' + arr.join('、');
+      toast(copyText(txt) ? '已复制，可以粘给家里买菜的人 ✓' : '复制失败，长按文字手动选吧');
+    };
+    state.view = 'shop';
+  }
+
+  /* ---------- 一周 ---------- */
+  function renderWeek() {
+    var wk = state.week || (state.week = makeWeek());
+    var names = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    var html = '<div class="card"><div class="card-h"><h2>这一周的晚饭</h2>' +
+      '<span class="hint">再点一次重排</span></div>';
+    wk.forEach(function (m, i) {
+      var txt = m.items.map(function (it) { return it.d[0]; }).join(' · ');
+      html += '<div class="wk-day"><b>' + names[i] + '</b><span class="m">' + txt + '</span></div>';
+    });
+    html += '<div class="hr"></div><div class="note-box">这七天的菜都是本色无麸质的，不用做任何替换。想加一道「换一下就行」的菜，就回上一页单独摇一顿。去买菜前对着这页拍个照。</div>';
+    html += '<div class="hr"></div><button class="btn ghost sm" id="backMeal2">← 返回</button></div>';
+    $('#mealOut').innerHTML = html;
+    $('#backMeal2').onclick = renderMeal;
+    state.view = 'week';
+  }
+
+  function makeWeek() {
+    var out = [], old = state.mode, seen = {};
+    state.mode = 'dinner';
+    for (var i = 0; i < 7; i++) out.push(buildMeal(seen));
+    state.mode = old;
+    LS.set(K_WEEK, out.map(function (m) {
+      return m.items.map(function (it) { return it.d[0]; });
+    }));
+    return out;
+  }
+
+  /* ---------- 菜单库 ---------- */
+  var lib = { cat: '', g: -1, tag: '', q: '' };
+
+  function renderLib() {
+    var list = DISHES.filter(function (d) {
+      if (lib.cat && d[1] !== lib.cat) return false;
+      if (lib.g >= 0 && d[2] !== lib.g) return false;
+      if (lib.tag && !has(d, lib.tag)) return false;
+      if (lib.q) {
+        var blob = (d[0] + ' ' + (d[5] || '') + ' ' + (d[4] || '') + ' ' + (d[3] || '')).toLowerCase();
+        if (blob.indexOf(lib.q.toLowerCase()) < 0) return false;
+      }
+      return true;
+    });
+    $('#libCount').textContent = '共 ' + list.length + ' 道 · 绿 ' +
+      list.filter(function (d) { return d[2] === 0; }).length + ' / 黄 ' +
+      list.filter(function (d) { return d[2] === 1; }).length + ' / 红 ' +
+      list.filter(function (d) { return d[2] === 2; }).length;
+
+    if (!list.length) { $('#libList').innerHTML = '<div class="empty">没找到，换个词试试</div>'; return; }
+
+    $('#libList').innerHTML = list.map(function (d, i) {
+      var b = '';
+      if (d[3]) b += '<div class="kv"><span>麸质</span>' + d[3] + '</div>';
+      if (d[5]) b += '<div class="kv"><span>食材</span>' + d[5].split('·').join(' · ') + '</div>';
+      if (d[6]) b += '<div class="kv"><span>做法</span>' + d[6] + '</div>';
+      return '<div class="dish" data-idx="' + i + '">' +
+        '<button class="dish-h"><i class="dot d' + d[2] + '"></i>' +
+        '<span class="nm">' + d[0] + '</span>' +
+        '<span class="meta">' + d[1] + '</span></button>' +
+        '<div class="dish-b">' + b +
+        '<div class="tags">' + tags(d).map(function (t) {
+          return '<span class="tg">' + t + '</span>';
+        }).join('') + '</div></div></div>';
+    }).join('');
+
+    $$('#libList .dish-h').forEach(function (btn) {
+      btn.onclick = function () {
+        btn.parentNode.classList.toggle('open');
+      };
+    });
+  }
+
+  /* ---------- 常备清单 ---------- */
+  var PANTRY = [
+    ['无麸质酱油（纯大豆酿造）', '最关键的一瓶，替代生抽老抽蒸鱼豉油'],
+    ['无麸质黄豆酱 / 大酱', '东北菜、京酱肉丝全靠它'],
+    ['米醋', '替代老陈醋、香醋（那些用麸皮酿）'],
+    ['高度白酒', '替代料酒去腥'],
+    ['土豆淀粉', '挂糊、勾芡、上浆，锅包肉的本体'],
+    ['玉米淀粉', '勾芡备用'],
+    ['红薯粉条 / 绿豆粉丝', '替代一切面条'],
+    ['米粉 / 米线', '替代挂面'],
+    ['大米粉 + 玉米面', '做发糕、饽饽、米饼'],
+    ['无麸质蚝油', '没有就用蒜蓉+盐+糖'],
+    ['纯芝麻酱', '拌菜、火锅蘸料'],
+    ['咖喱粉（不是咖喱块）', '咖喱块含小麦粉'],
+    ['无麸质面包 / 意面', '冷冻囤着救急'],
+    ['独立案板 + 铲子 + 漏勺', '跟面食分开，防串味']
+  ];
+
+  function renderPantry() {
+    var done = LS.get(K_PANTRY, {});
+    $('#pantry').innerHTML = PANTRY.map(function (p, i) {
+      var on = !!done[i];
+      return '<label class="ck' + (on ? ' done' : '') + '"><input type="checkbox" data-p="' + i + '"' +
+        (on ? ' checked' : '') + '><span>' + p[0] + '<small>' + p[1] + '</small></span></label>';
+    }).join('');
+    $$('#pantry input').forEach(function (cb) {
+      cb.onchange = function () {
+        var d = LS.get(K_PANTRY, {});
+        if (cb.checked) d[cb.getAttribute('data-p')] = 1; else delete d[cb.getAttribute('data-p')];
+        LS.set(K_PANTRY, d);
+        cb.parentNode.classList.toggle('done', cb.checked);
+        stat();
+      };
+    });
+    stat();
+  }
+  function stat() {
+    var d = LS.get(K_PANTRY, {});
+    $('#ckStat').textContent = Object.keys(d).length + ' / ' + PANTRY.length;
+  }
+
+  /* ---------- 记录 ---------- */
+  function renderHist() {
+    var h = LS.get(K_HIST, []);
+    var warn = STORAGE_OK ? '' :
+      '<div class="danger-box" style="margin-bottom:10px">现在这种打开方式存不住记录（比如用「文件」App 预览），页面一刷新就清空了。' +
+      '想要记住做过的菜，请从浏览器打开网址再加到主屏幕。</div>';
+    if (!h.length) {
+      $('#hist').innerHTML = warn + '<div class="empty">还没记过。点「就吃这个」就会攒起来，之后两周内不会重复推给你。</div>';
+      return;
+    }
+    $('#hist').innerHTML = warn + h.slice(0, 15).map(function (e) {
+      var dt = new Date(e.t);
+      var s = (dt.getMonth() + 1) + '/' + dt.getDate();
+      return '<div class="wk-day"><b>' + s + '</b><span class="m">' + e.d.join(' · ') + '</span></div>';
+    }).join('');
+  }
+
+  function saveMeal() {
+    if (!state.meal) return;
+    var h = LS.get(K_HIST, []);
+    h.unshift({ t: Date.now(), d: state.meal.items.map(function (it) { return it.d[0]; }) });
+    LS.set(K_HIST, h.slice(0, 120));
+    renderHist();
+    toast('记下了，两周内不重复 ✓');
+  }
+
+  /* ---------- toast ---------- */
+  var tmr = null;
+  function toast(msg) {
+    var t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(tmr);
+    tmr = setTimeout(function () { t.classList.remove('on'); }, 1900);
+  }
+
+  /* ---------- 事件 ---------- */
+  $('#modeSeg').onclick = function (e) {
+    var b = e.target.closest('[data-mode]'); if (!b) return;
+    $$('#modeSeg .chip').forEach(function (c) { c.classList.remove('on'); });
+    b.classList.add('on');
+    state.mode = b.getAttribute('data-mode');
+    renderMeal();
+  };
+
+  $('#condChips').onclick = function (e) {
+    var b = e.target.closest('[data-cond]'); if (!b) return;
+    var k = b.getAttribute('data-cond');
+    state.conds[k] = !state.conds[k];
+    b.classList.toggle('on', !!state.conds[k]);
+    renderMeal();
+  };
+
+  $('#mealOut').onclick = function (e) {
+    var sw = e.target.closest('[data-swap]');
+    if (sw) {
+      var i = +sw.getAttribute('data-swap');
+      var it = state.meal.items[i];
+      if (!it) return;
+      var used = {};
+      state.meal.items.forEach(function (x, j) { if (j !== i) used[x.d[0]] = 1; });
+      var d = pick(it.cat, used, recentNames(12));
+      if (d) { it.d = d; renderMeal(); }
+      return;
+    }
+    var nm = e.target.closest('[data-open]');
+    if (nm) {
+      var name = nm.getAttribute('data-open');
+      goto('lib');
+      $('#q').value = name;
+      lib.q = name; lib.cat = ''; lib.g = -1; lib.tag = '';
+      $$('#catSeg .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-cat') === ''); });
+      $$('#gfSeg .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-g') === '-1'); });
+      $$('#tagSeg .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-tag') === ''); });
+      renderLib();
+    }
+  };
+
+  $('#rollBtn').onclick = function () { state.meal = buildMeal(); renderMeal(); };
+  $('#saveBtn').onclick = saveMeal;
+  $('#shopBtn').onclick = renderShop;
+  $('#weekBtn').onclick = function () { state.week = makeWeek(); renderWeek(); };
+  $('#histBtn').onclick = function () { goto('list'); renderHist(); };
+
+  $('#clearHist').onclick = function () {
+    LS.set(K_HIST, []);
+    renderHist();
+    toast('清空了');
+  };
+
+  /* 搜索 */
+  var qt = null;
+  $('#q').oninput = function () {
+    clearTimeout(qt);
+    var v = $('#q').value.trim();
+    qt = setTimeout(function () { lib.q = v; renderLib(); }, 120);
+  };
+
+  /* 类别 */
+  $('#catSeg').innerHTML = ['', '早餐', '主食', '素菜', '半荤', '荤菜', '凉菜', '汤'].map(function (c) {
+    return '<button class="chip' + (c === '' ? ' on' : '') + '" data-cat="' + c + '">' + (c || '全部') + '</button>';
+  }).join('');
+
+  $('#catSeg').onclick = function (e) {
+    var b = e.target.closest('[data-cat]'); if (!b) return;
+    $$('#catSeg .chip').forEach(function (c) { c.classList.remove('on'); });
+    b.classList.add('on'); lib.cat = b.getAttribute('data-cat'); renderLib();
+  };
+  $('#gfSeg').onclick = function (e) {
+    var b = e.target.closest('[data-g]'); if (!b) return;
+    $$('#gfSeg .chip').forEach(function (c) { c.classList.remove('on'); });
+    b.classList.add('on'); lib.g = +b.getAttribute('data-g'); renderLib();
+  };
+  $('#tagSeg').onclick = function (e) {
+    var b = e.target.closest('[data-tag]'); if (!b) return;
+    $$('#tagSeg .chip').forEach(function (c) { c.classList.remove('on'); });
+    b.classList.add('on'); lib.tag = b.getAttribute('data-tag'); renderLib();
+  };
+
+  /* 手风琴 */
+  $$('.acc > button').forEach(function (b) {
+    b.onclick = function () { b.parentNode.classList.toggle('open'); };
+  });
+
+  /* tab */
+  function goto(s) {
+    $$('.screen').forEach(function (x) { x.classList.remove('on'); });
+    $('#s-' + s).classList.add('on');
+    $$('nav button').forEach(function (b) {
+      b.classList.toggle('on', b.getAttribute('data-s') === s);
+    });
+    window.scrollTo(0, 0);
+  }
+  $$('nav button').forEach(function (b) {
+    b.onclick = function () { goto(b.getAttribute('data-s')); };
+  });
+
+  /* ---------- 启动 ---------- */
+  renderMeal();
+  renderLib();
+  renderPantry();
+  renderHist();
+
+  window.__JCS = { state: state, DISHES: DISHES, CATS: CATS, POOL: POOL, candidates: candidates, match: match, buildMeal: buildMeal, pick: pick, recentNames: recentNames };
+
+  /* ---------- 离线缓存（本地文件打开会自动跳过） ---------- */
+  var SW_OK = location.protocol === 'https:' ||
+    location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if ('serviceWorker' in navigator && SW_OK) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () { });
+    });
+  }
+})();
+</script>
+</body>
+</html>

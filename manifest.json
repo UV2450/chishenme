@@ -1,0 +1,16 @@
+{
+  "name": "今天吃啥 · 天津三口之家",
+  "short_name": "今天吃啥",
+  "description": "无麸质友好的家常菜谱与随机配餐",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf7f2",
+  "theme_color": "#c8532a",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
