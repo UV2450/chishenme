@@ -716,6 +716,50 @@ const CATS = ["早餐","主食","素菜","半荤","荤菜","凉菜","汤"];
     return s.replace(/无麸质/g, '').replace(/（换）/g, '').replace(/（别用）/g, '');
   }
 
+  /* ---------- 配餐去重：主料类别 ---------- */
+  // 一顿饭里不出现两种同源肉（排骨 + 肉末 + 排骨汤，吃起来就是一个味）
+  function proteinOf(d) {
+    var s = ((d[5] || '') + ' ' + (d[0] || ''))
+      // 先摘掉「看着像肉其实不是」的字眼，避免误判
+      .replace(/鸡蛋|蛋液|蛋清|蛋黄|皮蛋|鸭蛋|鹅蛋|蛋/g, '')
+      .replace(/蚝油/g, '')
+      .replace(/鱼香/g, '')          // 鱼香肉丝、鱼香茄子：没有鱼
+      .replace(/牛奶|牛油果|牛油/g, '')
+      .replace(/鸡精|鸡腿菇/g, '')
+      .replace(/虾皮|虾米|蟹棒|鱼豆腐/g, '');
+    if (/牛/.test(s)) return '牛';
+    if (/羊/.test(s)) return '羊';
+    if (/鸭/.test(s)) return '鸭';
+    if (/鸡/.test(s)) return '鸡';
+    if (/鱼|虾|蟹|蚬|鱿|蚝|扇贝|贝/.test(s)) return '鱼虾';
+    if (/猪|五花|排骨|里脊|肉末|肉沫|肉丝|肉片|肉馅|肉丁|肘|蹄|肝|腰花|香肠|腊肠|火腿|大骨/.test(s)) return '猪';
+    if (/蛋/.test(d[5] || '') || /蛋/.test(d[0] || '')) return '蛋';
+    if (/豆腐|豆干|豆皮|腐竹|干豆腐|素鸡|豆泡/.test(s)) return '豆制品';
+    return '';
+  }
+  // 蛋和豆制品不算「肉」，可以同餐共存
+  function isMeat(p) { return p && p !== '蛋' && p !== '豆制品'; }
+
+  // 淀粉类主料：主食占了一样，配菜就躲开同类
+  var STARCH_RE = /土豆|红薯|紫薯|南瓜|玉米|山药|芋头/;
+  // 不算「食材重复」的调味料
+  var ING_IGNORE = /^(蒜|蒜末|蒜蓉|蒜片|葱|小葱|大葱|葱花|姜|姜丝|姜片|盐|糖|冰糖|米醋|白醋|香油|橄榄油|花生油|黄油|花椒|大料|干辣椒|辣椒|辣椒面|小米辣|黑胡椒|胡椒|清水|水|油)$/;
+
+  function ctxFor(meal, skipIdx) {
+    var meat = {}, ing = {}, starch = false;
+    (meal.items || []).forEach(function (it, j) {
+      if (j === skipIdx) return;
+      var p = proteinOf(it.d);
+      if (isMeat(p)) meat[p] = 1;
+      (it.d[5] || '').split('·').forEach(function (x) {
+        x = x.trim();
+        if (x && !ING_IGNORE.test(x)) ing[x] = (ing[x] || 0) + 1;
+      });
+      if (it.role === '主食' && STARCH_RE.test((it.d[5] || '') + it.d[0])) starch = true;
+    });
+    return { meat: meat, ing: ing, starchFree: starch };
+  }
+
   /* ---------- 状态 ---------- */
   // GFM = 家里是否有人对小麦敏感。默认开（本机就是这种情况）。
   // 分享给不忌口的朋友时，在「麸质」页关掉即可解锁含小麦的菜。
@@ -772,12 +816,41 @@ const CATS = ["早餐","主食","素菜","半荤","荤菜","凉菜","汤"];
     return s;
   }
 
-  function pick(cat, used, avoid) {
+  function pick(cat, used, avoid, ctx) {
     var list = candidates(cat).filter(function (d) { return !used[d[0]]; });
     if (!list.length) list = candidates(cat);
     if (!list.length) return null;
-    var fresh = list.filter(function (d) { return !avoid[d[0]]; });
-    var src = fresh.length ? fresh : list;
+
+    ctx = ctx || { meat: {}, ing: {}, starchFree: false };
+
+    // 硬规则①：一顿饭里不出现两种同源肉（拿不到就退让）
+    var f = list.filter(function (d) {
+      var p = proteinOf(d);
+      return !(isMeat(p) && ctx.meat[p]);
+    });
+    if (f.length) list = f;
+
+    // 硬规则②：主食是土豆/红薯这类淀粉时，配菜不再上同类
+    if (ctx.starchFree) {
+      var g = list.filter(function (d) { return !STARCH_RE.test(d[5] || ''); });
+      if (g.length) list = g;
+    }
+
+    // 软规则：和已有菜的主料重合越少越好
+    function overlap(d) {
+      var o = 0;
+      (d[5] || '').split('·').forEach(function (x) {
+        x = x.trim();
+        if (x && ctx.ing[x]) o += ctx.ing[x];
+      });
+      return o;
+    }
+    var scored = list.map(function (d) { return { d: d, o: overlap(d) }; });
+    var min = Math.min.apply(null, scored.map(function (x) { return x.o; }));
+    var best = scored.filter(function (x) { return x.o === min; }).map(function (x) { return x.d; });
+
+    var fresh = best.filter(function (d) { return !avoid[d[0]]; });
+    var src = fresh.length ? fresh : best;
     return src[Math.floor(Math.random() * src.length)];
   }
 
@@ -785,7 +858,7 @@ const CATS = ["早餐","主食","素菜","半荤","荤菜","凉菜","汤"];
     var used = {}, avoid = recentNames(12), m = { mode: state.mode, items: [] };
     if (seen) { Object.keys(seen).forEach(function (k) { avoid[k] = 1; }); }
     function add(role, cls, cat) {
-      var d = pick(cat, used, avoid);
+      var d = pick(cat, used, avoid, ctxFor(m));
       if (d) {
         m.items.push({ role: role, cls: cls, cat: cat, d: d });
         used[d[0]] = 1;
@@ -1093,7 +1166,7 @@ const CATS = ["早餐","主食","素菜","半荤","荤菜","凉菜","汤"];
       if (!it) return;
       var used = {};
       state.meal.items.forEach(function (x, j) { if (j !== i) used[x.d[0]] = 1; });
-      var d = pick(it.cat, used, recentNames(12));
+      var d = pick(it.cat, used, recentNames(12), ctxFor(state.meal, i));
       if (d) { it.d = d; renderMeal(); }
       return;
     }
@@ -1172,7 +1245,7 @@ const CATS = ["早餐","主食","素菜","半荤","荤菜","凉菜","汤"];
   renderPantry();
   renderHist();
 
-  window.__JCS = { state: state, DISHES: DISHES, CATS: CATS, POOL: POOL, candidates: candidates, match: match, buildMeal: buildMeal, pick: pick, recentNames: recentNames, setGFM: function (v) { GFM = !!v; state.conds.strict = !!v; return GFM; }, getGFM: function () { return GFM; } };
+  window.__JCS = { state: state, DISHES: DISHES, CATS: CATS, POOL: POOL, candidates: candidates, match: match, buildMeal: buildMeal, pick: pick, recentNames: recentNames, proteinOf: proteinOf, ctxFor: ctxFor, setGFM: function (v) { GFM = !!v; state.conds.strict = !!v; return GFM; }, getGFM: function () { return GFM; } };
 
   /* ---------- 离线缓存（本地文件打开会自动跳过） ---------- */
   var SW_OK = location.protocol === 'https:' ||
